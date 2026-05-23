@@ -72,6 +72,7 @@ io.on('connection', (socket) => {
     const responseStream=await ai.models.genai.generateContentStream({
   model:'models/gemini-2.5-flash',
   contents:contents: `Analyze this rolling context of a student's live interview speech: "${recentSpeechContext}"`,
+
       config:{
         systemInstruction: `
             You are a real-time speech and interview coach. Analyze the user's incoming text for pacing, filler words ('um', 'like', 'so'), and technical concepts.
@@ -90,6 +91,7 @@ io.on('connection', (socket) => {
           `,
           responseMimeType:'application/json' // Core SDK setting enforcing structural JSON parsing
       }
+    
     });
     let fullResponse='';
     for await (const chunk of responseStream){
@@ -111,6 +113,7 @@ io.on('connection', (socket) => {
   });
 
 });
+
 
 
 
