@@ -94,6 +94,7 @@ io.on('connection', (socket) => {
     
     });
     let fullResponse='';
+    
     for await (const chunk of responseStream){
       fullResponse+=chunk.text;
     }
