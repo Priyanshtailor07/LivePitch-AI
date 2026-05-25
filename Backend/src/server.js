@@ -4,7 +4,10 @@ import http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import {GoogleGenAI} from '@google/genai';
-import {contextManager} from './services/contextManager.js';
+
+
+import contextManager from './services/contextManagers.js';
+import jwt from 'jsonwebtoken';
 import authRoutes from './routes/authRoutes.js';
 
 const app = express()
@@ -67,11 +70,11 @@ io.on('connection', (socket) => {
       }
 
       contextManager.addChunks(userId, data.text);
-      const recentSpeechContext=contextManager.getContextWindow(userId);
+      const recentSpeechContext = contextManager.getContext(userId);
     console.log(`[Memory Monitor] Context for ${userId}: "${recentSpeechContext}"`);
     const responseStream=await ai.models.genai.generateContentStream({
   model:'models/gemini-2.5-flash',
-  contents:contents: `Analyze this rolling context of a student's live interview speech: "${recentSpeechContext}"`,
+  contents:`Analyze this rolling context of a student's live interview speech: "${recentSpeechContext}"`,
 
       config:{
         systemInstruction: `
@@ -92,22 +95,23 @@ io.on('connection', (socket) => {
           responseMimeType:'application/json' // Core SDK setting enforcing structural JSON parsing
       }
     
-    });
-    let fullResponse='';
     
-    for await (const chunk of responseStream){
-      fullResponse+=chunk.text;
+    });
+  
+    let fullResponse='';
+
+    for await (const chunk of responseStream) {
+      fullResponse += chunk.text;
     }
-    const parsedFeedback=JSON.parse(fullResponse);
-    if(parsedFeedback.alerts && parsedFeedback.alerts.length>0){
+    const parsedFeedback = JSON.parse(fullResponse);
+    if (parsedFeedback.alerts && parsedFeedback.alerts.length > 0) {
       io.to(userRoom).emit('live-feedback', parsedFeedback);
       console.log(`[Feedback Dispatched] To ${userRoom}:`, parsedFeedback);
-
     }
-    catch(error){
-      console.error('Error processing speech chunk:',error.message);
-   });
-
+        } catch (err) {
+      console.error('Error processing speech-chunk:', err);
+    }
+    });
 
    socket.on('disconnect', () => {
     console.log(`Client disconnected [ID: ${socket.id}] from room: ${userRoom}`);
