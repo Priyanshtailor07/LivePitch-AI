@@ -1,8 +1,8 @@
-import {Oauth2Client} from 'google-auth-library';
+import {OAuth2Client} from 'google-auth-library';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
-const client = new Oauth2Client(process.env.GOOGLE_CLIENT_ID);
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const googleAuthHandler=async(req,res)=>{
     try{
@@ -19,7 +19,7 @@ export const googleAuthHandler=async(req,res)=>{
         const payload=ticket.getPayload();
         const {sub:googleId,email,name:displayName,picture:profilePicture}=payload;
 
-            let user = await User.findOn({googleId});
+            let user = await User.findOne({googleId});
             if(!user){
               console.log(`Registering new user account:${email}`);
               user= new User({
@@ -39,6 +39,7 @@ export const googleAuthHandler=async(req,res)=>{
             );
             return res.status(200).json
             ({
+                success:true,
                 message:'Authentication successful',
                 token,
                 user:{
@@ -48,7 +49,7 @@ export const googleAuthHandler=async(req,res)=>{
                     profilePicture:user.profilePicture,
 
                 }
-            })
+            });
 
             
     }

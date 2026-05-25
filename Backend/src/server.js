@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import http from 'http';
+import mongoose from 'mongoose';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import {GoogleGenAI} from '@google/genai';
@@ -30,16 +31,21 @@ const io = new Server(server, {
 
 const ai= new GoogleGenAI({apiKey:process.env.GOOGLE_API_KEY});
 
+
 app.use('/api/auth',authRoutes);
+mongoose.connect(process.env.MONGO_URI)
+.then(()=>console.log("Connected to MongoDB"))
+.catch((err)=>console.error("MongoDB connection error:",err));
 
 
 
 io.use((socket, next) => {
-  const token = socket.handshake.auth.token;
+  const token = socket.handshake.auth.token || socket.handshake.query.token;
+
 
   if (!token) {
     console.log(" Gatekeeper: No token found. Slamming the door!");
-    // CRITICAL: You must return next(error) so execution STOPS here
+    
     return next(new Error("Authentication error: Missing Token"));
   }
 
@@ -53,7 +59,7 @@ io.use((socket, next) => {
       return next(new Error("Authentication error: Invalid Token"));
     }
  
-})
+});
 
 
 io.on('connection', (socket) => {
@@ -70,8 +76,11 @@ io.on('connection', (socket) => {
       }
 
       contextManager.addChunks(userId, data.text);
+
       const recentSpeechContext = contextManager.getContext(userId);
+
     console.log(`[Memory Monitor] Context for ${userId}: "${recentSpeechContext}"`);
+    
     const responseStream=await ai.models.genai.generateContentStream({
   model:'models/gemini-2.5-flash',
   contents:`Analyze this rolling context of a student's live interview speech: "${recentSpeechContext}"`,
@@ -108,12 +117,14 @@ io.on('connection', (socket) => {
       io.to(userRoom).emit('live-feedback', parsedFeedback);
       console.log(`[Feedback Dispatched] To ${userRoom}:`, parsedFeedback);
     }
-        } catch (err) {
+     }
+      catch (err) {
       console.error('Error processing speech-chunk:', err);
     }
     });
 
    socket.on('disconnect', () => {
+    contextManager.clearSession(socket.userId);
     console.log(`Client disconnected [ID: ${socket.id}] from room: ${userRoom}`);
   });
 

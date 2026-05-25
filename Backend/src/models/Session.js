@@ -1,4 +1,4 @@
-const mongoose=require('mongoose');
+import moongoose from 'mongoose';
 
 const   alertSchema=new mongoose.Schema({
     type: {
@@ -44,7 +44,9 @@ const sessionSchema=new mongoose.Schema({
     alertsTriggered: [alertSchema]
 }, {
   timestamps: true
-})
-module.exports=mongoose.model('Session',sessionSchema);
+});
+
+const Session=mongoose.model('Session',sessionSchema);
+export default Session;
 
 
