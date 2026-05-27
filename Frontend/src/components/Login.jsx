@@ -27,32 +27,32 @@ const Login = () => {
     };
   return (
 
-    <div style={style.container}>
-        <div style={style.card}>
-            <h1 style={style.title}>
-                LivePitch<span style={style.ai}>ai</span>
-            </h1>
-           <p style={style.subtitle}> Real-Time speech analytics</p>
-           <div style={style.buttonWrapper}>
-            <GoogleLogin
-            onSuccess={handleSuccess}
-            onError ={()=>console.error("Google OAuth interface error")}
-            useOneTap
-            />
-           </div>
+    <div className="flex h-screen w-screen items-center justify-center bg-[#0b0f19] px-4 font-sans">
+        <div className="w-full max-w-md border border-slate-800 bg-slate-900/50 rounded-2xl p-8 shadow-2xl backdrop-blur-md text-center space-y-6">
 
+            <div className="space-y-2">
+
+            <h1 className="text-4xl font-black tracking-tight text-white">
+                LivePitch<span className="text-sky-400">.ai</span>
+            </h1><p className="text-slate-400 text-sm">
+            Real-time speech analytics & instant AI interview coaching.
+          </p>        
+
+
+
+                </div>
+                <div className="flex justify-center bg-slate-800/80 p-3 rounded-xl border border-slate-700/50 shadow-inner">
+          <GoogleLogin
+            onSuccess={handleSuccess}
+            onError={() => console.error("Google OAuth interface error")}
+            useOneTap
+          />
+        </div>
         </div>  
     </div>
 
   )
 }
 
-const style = {
-  container: { display: 'flex', height: '100vh', width: '100vw', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0f172a', color: '#f8fafc', fontFamily: 'sans-serif' },
-  card: { padding: '2.5rem', borderRadius: '12px', backgroundColor: '#1e293b', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.3)', textAlign: 'center', maxWidth: '400px', width: '90%' },
-  title: { fontSize: '2.25rem', margin: '0 0 0.5rem 0', fontWeight: '800', letterSpacing: '-0.05em' }, // <-- Fixed: Changed 'tracking' to 'letterSpacing'
-  ai: { color: '#38bdf8' },
-  subtitle: { color: '#94a3b8', fontSize: '0.95rem', margin: '0 0 2rem 0', lineHeight: '1.5' },
-  buttonWrapper: { display: 'flex', justifyContent: 'center' }
-};
+
 export default Login
